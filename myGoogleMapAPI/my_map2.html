@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Explore Jadavpur University</title>
+    <link href="/maps/documentation/javascript/examples/default.css" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+	<script>
+      var moonTypeOptions = {
+        getTileUrl: function(coord, zoom) {
+            var normalizedCoord = getNormalizedCoord(coord, zoom);
+            if (!normalizedCoord) {
+              return null;
+            }
+            var bound = Math.pow(2, zoom);
+			/*
+            return 'http://mw1.google.com/mw-planetary/lunar/lunarmaps_v1/clem_bw' +
+                '/' + zoom + '/' + normalizedCoord.x + '/' +
+                (bound - normalizedCoord.y - 1) + '.jpg';
+			*/
+			return 'output/tile_' + zoom + '_' + coord.x + '-' + coord.y + '.png';
+				
+        },
+        tileSize: new google.maps.Size(256, 256),
+        maxZoom: 5,
+        minZoom: 3,
+        //radius: 1738000,
+		//radius: 5000,
+        name: 'Mario World'
+      };
+
+      var moonMapType = new google.maps.ImageMapType(moonTypeOptions);
+
+      function initialize() {
+        var myLatlng = new google.maps.LatLng(22,0);
+		var browser_castle = new google.maps.LatLng(56.67068019347264, 15.556640625);
+        var mapOptions = {
+          center: myLatlng,
+          zoom: 1,
+		  
+		  
+			mapTypeControl: false,
+			
+			panControl: false,
+			
+			zoomControl: false,
+			
+			scaleControl: false,
+			
+			streetViewControl: false,
+			
+			backgroundColor: "#33cccc",
+		  
+		  
+		  
+		  
+		  /*
+          streetViewControl: false, 
+		  mapTypeControl: false, 
+          mapTypeControlOptions: {
+            mapTypeIds: ['Mario World'],
+          }
+		  */
+        };
+
+        map = new google.maps.Map(document.getElementById('map_canvas'),
+            mapOptions);
+        map.mapTypes.set('moon', moonMapType);
+        map.setMapTypeId('moon');
+		
+		 marker = new google.maps.Marker({
+		position: browser_castle,
+		draggable:true,
+		map: map,
+		title:"Browser's Castle",
+		animation: google.maps.Animation.DROP
+		});
+		
+		
+		 
+		var strictBounds = new google.maps.LatLngBounds(
+		 //new google.maps.LatLng(-83.26225504918189, -153.896484375), 
+		 //new google.maps.LatLng(83.41517750613926, 153.369140625)
+		 new google.maps.LatLng(-73.26225504918189, -67.896484375), 
+		 new google.maps.LatLng(67.26225504918189, 67.896484375)
+	   );
+
+	   // Listen for the dragend event
+	   google.maps.event.addListener(map, 'drag', function() {
+		 if (strictBounds.contains(map.getCenter())) return;
+
+		 // We're out of bounds - Move the map back within the bounds
+
+		 var c = map.getCenter(),
+			 x = c.lng(),
+			 y = c.lat(),
+			 maxX = strictBounds.getNorthEast().lng(),
+			 maxY = strictBounds.getNorthEast().lat(),
+			 minX = strictBounds.getSouthWest().lng(),
+			 minY = strictBounds.getSouthWest().lat();
+
+		 if (x < minX) x = minX;
+		 if (x > maxX) x = maxX;
+		 if (y < minY) y = minY;
+		 if (y > maxY) y = maxY;
+
+		 map.setCenter(new google.maps.LatLng(y, x));
+	   }); 
+	   
+	   
+	   var infowindow = new google.maps.InfoWindow({
+			content:"Browser's Castle!"
+		});
+		 
+		google.maps.event.addListener(marker, 'click', function() {
+			infowindow.open(map,marker);
+		
+		}); 
+		
+		google.maps.event.addListener(marker, 'click', toggleBounce);
+      }
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  function click_func()
+	  {
+		var NewMapCenter = map.getCenter();
+		var latitude = NewMapCenter.lat();
+		var longitude = NewMapCenter.lng();
+		//alert("Lat: " + latitude + " Long: " + longitude);
+		
+	  }
+	  function toggleBounce() {
+
+		  if (marker.getAnimation() != null) {
+			marker.setAnimation(null);
+		  } else {
+			marker.setAnimation(google.maps.Animation.BOUNCE);
+		  }
+		}
+			  
+	  /*
+	  var allowedBounds = new google.maps.LatLngBounds(
+			 new google.maps.LatLng(75, -76), 
+			 new google.maps.LatLng(-75, 74)
+		);
+		var lastValidCenter = map.getCenter();
+
+		google.maps.event.addListener(map, 'center_changed', function() {
+			if (allowedBounds.contains(map.getCenter())) {
+				// still within valid bounds, so save the last valid position
+				lastValidCenter = map.getCenter();
+				return; 
+			}
+
+			// not valid anymore => return to last valid position
+			map.panTo(lastValidCenter);
+		});
+	  
+	  */
+	  
+      // Normalizes the coords that tiles repeat across the x axis (horizontally)
+      // like the standard Google map tiles.
+      function getNormalizedCoord(coord, zoom) {
+        var y = coord.y;
+        var x = coord.x;
+
+        // tile range in one direction range is dependent on zoom level
+        // 0 = 1 tile, 1 = 2 tiles, 2 = 4 tiles, 3 = 8 tiles, etc
+        var tileRange = 1 << zoom;
+
+        // don't repeat across y-axis (vertically)
+        if (y < 0 || y >= tileRange) {
+          //return null;
+		  y = (y % tileRange + tileRange) % tileRange;
+        }
+
+        // repeat across x-axis
+        if (x < 0 || x >= tileRange) {
+          x = (x % tileRange + tileRange) % tileRange;
+        }
+
+        return {
+          x: x,
+          y: y
+        };
+		
+		
+		
+      }
+	  
+      </script>
+  </head>
+  <body style="background:#000000;" onload="initialize()">
+  <div id="bounding_box_top" style="position:absolute; 
+							   width:1200px; 
+							   height:82px; 
+							   background:url('pics/BoundingBox_top.png'); 
+							   background-repeat:no-repeat; 
+							   border:inherit;  
+							   top:35px;
+							   left:100px;
+							   z-index:10;
+							   margin:0px;
+							   border:0px;
+							   padding:0px;
+							   ">
+	</div>
+	<div id="bounding_box_bottom" style="position:absolute; 
+							   width:1200px; 
+							   height:73px; 
+							   background:url('pics/BoundingBox_bottom.png'); 
+							   background-repeat:no-repeat; 
+							   border:inherit;  
+							   top:661px; 
+							   left:100px;
+							   z-index:10;
+							   margin:0px;
+							   border:0px;
+							   padding:0px;
+							   ">
+	</div>
+	<div id="bounding_box_right" style="position:absolute; 
+							   width:67px; 
+							   height:544px; 
+							   background:url('pics/BoundingBox_right.png'); 
+							   background-repeat:no-repeat; 
+							   border:inherit;  
+							   left:1233px;
+							   top:117px;
+							   z-index:10;
+							   margin:0px;
+							   border:0px;
+							   padding:0px;
+							   ">
+	</div>
+	<div id="bounding_box_left" style="position:absolute; 
+							   width:67px; 
+							   height:544px; 
+							   background:url('pics/BoundingBox_left.png'); 
+							   background-repeat:no-repeat; 
+							   border:inherit;  
+							   top:117px;
+							   left:100px;
+							   z-index:10;
+							   margin:0px;
+							   border:0px;
+							   padding:0px;
+							   ">
+	</div>
+    <div id="map_canvas" style="width: 1200px; height: 690px; z-index:3; top:35px; left:92px; margin:0px;" onclick="click_func();"></div>
+	<script>
+		
+	</script>
+  </body>
+</html>
